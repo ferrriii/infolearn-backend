@@ -1,0 +1,43 @@
+{
+  "name": "infoshare",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "standard --fix && nodemon --exec babel-node src/index.js",
+    "lint": "standard src/**",
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.6.4",
+    "@babel/node": "^7.6.3",
+    "@babel/preset-env": "^7.6.3",
+    "eslint": "^6.5.1",
+    "jest": "^24.9.0",
+    "nodemon": "^1.19.3",
+    "standard": "^14.3.1",
+    "supertest": "^4.0.2"
+  },
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.1.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.7.5"
+  },
+  "standard": {
+    "env": {
+      "jest": true,
+	  "node": true
+    }
+  },
+  "jest": {
+	"testEnvironment": "node",
+	"coveragePathIgnorePatterns": [
+	  "/node_modules/"
+	]
+  }
+}
