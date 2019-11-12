@@ -1,16 +1,42 @@
-import User from '../models/user.js'
 import Book from '../models/book.js'
 import Response from '../modules/response.js'
 import Mongoose from 'mongoose'
 const ObjectId = Mongoose.Types.ObjectId
 
-async function books (req, res) {
-  const userId = req.authToken.sub
-  const user = await User.findById(userId)
-  const userBooks = await Book.aggregate([
+function bookPipeline (extendedFields = []) {
+  const extendedGroups = {}
+  const extendedProject = {}
+  extendedFields.forEach(f => {
+    extendedGroups[f] = { $first: `$${f}` }
+    extendedProject[f] = 1
+  })
+  return [
     {
-      $match: {
-        author: new ObjectId(userId)
+      // merge all subcribed books into each book
+      $lookup:
+      {
+        from: 'users',
+        pipeline: [
+          { $project: { _id: 0, subscription: 1 } }
+        ],
+        as: 'subscribedBooks'
+      }
+    },
+    { $unwind: { path: '$subscribedBooks', preserveNullAndEmptyArrays: true } }, // subscribedBooks will be an array as result of lookup, let's unwind it
+    {
+      $addFields: { subscribedBooks: '$subscribedBooks.subscription' }
+    },
+    // subscriptions are nested, let's extract them
+    { $unwind: { path: '$subscribedBooks', preserveNullAndEmptyArrays: true } },
+    {
+      $group: {
+        _id: '$_id',
+        title: { $first: '$title' },
+        description: { $first: '$description' },
+        lastText: { $first: '$lastText' },
+        author: { $first: '$author' },
+        subscribed: { $max: { $eq: ['$subscribedBooks', '$_id'] } },
+        ...extendedGroups
       }
     },
     {
@@ -19,53 +45,27 @@ async function books (req, res) {
         id: '$_id',
         title: 1,
         description: 1,
-        lastText: 1
+        lastText: 1,
+        author: 1,
+        subscribed: 1,
+        ...extendedProject
       }
     }
-  ])
-  const userBooksWithSubscription = userBooks.map(book => {
-    if (user.subscription.includes(book.id)) {
-      book.subscribed = true
-    } else {
-      book.subscribed = false
-    }
-    return book
-  })
-  Response(res).success(userBooksWithSubscription)
+  ]
+}
 
-/*
-const userBooks = await Book.aggregate([
-  {
- $match: {
-   author: new ObjectId(userId)
- }
-  },
-  {
- // merge all subcribed books into each book
- $lookup:
-  {
-    from: 'users',
-    pipeline: [
-   { $project: { _id: 0, subscription: 1 } }
-    ],
-    as: 'holidays'
-  }
-  },
-  { $unwind: '$holidays' }, // holidays will be an array as result of lookup, let's unwind it
-  { $addFields: { holidays: '$holidays.subscription' } }, // subscriptions are nested, let's extract them
-  { $unwind: '$holidays' },
-  {
- $group: {
-   _id: '$_id',
-   text: { $first: '$title' },
-   description: { $first: '$description' },
-   lastText: { $first: '$lastText' },
-   author: { $first: '$author' },
-   subscribed: { $max: { $eq: ['$holidays', '$_id'] } }
- }
-  }
-])
-*/
+async function books (req, res) {
+  const userId = req.authToken.sub
+  const userBooks = await Book.aggregate([
+    {
+      $match: {
+        author: new ObjectId(userId)
+      }
+    },
+    ...bookPipeline()
+  ])
+
+  Response(res).success(userBooks)
 }
 
 async function createBook (req, res) {
@@ -105,44 +105,9 @@ async function searchBooks (req, res) {
     { $sort: { score: { $meta: 'textScore' } } },
     { $limit: 10 },
     {
-      // merge all subcribed books into each book
-      $lookup:
-  {
-    from: 'users',
-    pipeline: [
-      { $project: { _id: 0, subscription: 1 } }
-    ],
-    as: 'subscribedBooks'
-  }
-    },
-    { $unwind: { path: '$subscribedBooks', preserveNullAndEmptyArrays: true } }, // subscribedBooks will be an array as result of lookup, let's unwind it
-    {
-      $addFields: { subscribedBooks: '$subscribedBooks.subscription', score: { $meta: 'textScore' } }
+      $addFields: { score: { $meta: 'textScore' } }
     }, // subscriptions are nested, let's extract them
-    { $unwind: { path: '$subscribedBooks', preserveNullAndEmptyArrays: true } },
-    {
-      $group: {
-        _id: '$_id',
-        title: { $first: '$title' },
-        description: { $first: '$description' },
-        lastText: { $first: '$lastText' },
-        author: { $first: '$author' },
-        score: { $first: '$score' },
-        subscribed: { $max: { $eq: ['$subscribedBooks', '$_id'] } }
-      }
-    },
-    {
-      $project: {
-        _id: 0,
-        id: '$_id',
-        title: 1,
-        description: 1,
-        lastText: 1,
-        author: 1,
-        score: 1,
-        subscribed: 1
-      }
-    },
+    ...bookPipeline(['score']),
     { $sort: { score: -1 } }
   ])
 
