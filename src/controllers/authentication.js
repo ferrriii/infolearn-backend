@@ -1,8 +1,6 @@
 import User from '../models/user.js'
-import Book from '../models/book.js'
 import Response from '../modules/response.js'
 import jwt from 'jsonwebtoken'
-import Mongoose from 'mongoose'
 
 export default {
   checkAuth (req, res, next) {
@@ -27,15 +25,14 @@ export default {
       const user = await findUserByDevice(deviceId)
       if (user && user._id) {
         // if found and there's no pass return jwtToken
-        const token = userToken(user)
+        const token = createUserToken(user)
         return Response(res).success({ token })
       }
       // if found and there's pass return failed
       // if not found register and return jwt
 
       const savedUser = await saveUser({ deviceId })
-      saveBook('notes', savedUser._id)
-      const token = userToken(savedUser)
+      const token = createUserToken(savedUser)
       Response(res).success({ token })
     } catch (e) {
       console.error(e)
@@ -57,19 +54,7 @@ function saveUser ({ deviceId }) {
   return user.save()
 }
 
-function saveBook (book, userId) {
-  const ObjectId = Mongoose.Types.ObjectId
-  const bookObj = new Book({
-    title: book,
-    description: 'your note book',
-    author: new ObjectId(userId)
-  })
-
-  // Save in the database
-  return bookObj.save()
-}
-
-function userToken (user) {
+function createUserToken (user) {
   const jwtToken = { sub: user._id }
   return jwt.sign(jwtToken, process.env.JWT_SECRET)
 }
