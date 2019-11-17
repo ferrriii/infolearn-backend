@@ -3,7 +3,8 @@ import mongoose from 'mongoose'
 import db from '../src/db.js'
 
 async function initialize () {
-  return db.connect(process.env.MONGO_TEST_DB_URL)
+  await db.connect(process.env.MONGO_TEST_DB_URL)
+  return clear()
 }
 
 async function clear () {
