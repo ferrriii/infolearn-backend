@@ -38,7 +38,11 @@ export default function (response) {
       }
     },
     success (data) {
-      res.json({ data })
+      if (!data) {
+        res.status(204).end()
+      } else {
+        res.json({ data })
+      }
     }
   }
 }
