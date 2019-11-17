@@ -16,7 +16,7 @@ export default {
   },
   async register (req, res) {
     const deviceId = req.body.deviceId
-    if (!deviceId || deviceId <= 0) {
+    if (!deviceId || deviceId <= 0 || isNaN(deviceId)) {
       return Response(res).error(400, 'invalid device id')
     }
 
