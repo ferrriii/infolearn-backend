@@ -16,7 +16,7 @@ then
 ```
 npm install
 ```
-See [InfoLearn backend repositry](https://github.com/ferrriii/infolearn-backend) for frontend API.
+See [InfoLearn frontend repositry](https://github.com/ferrriii/infolearn-frontend) for frontend.
 
 
 ### Run
