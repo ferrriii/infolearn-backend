@@ -12,8 +12,6 @@ const schema = mongoose.Schema({
   timestamps: true
 })
 
-schema.virtual('timestampMs').get(function () {
-  return this.timestamp.getTime()
-})
+schema.index({ deviceId: 1 })
 
 export default mongoose.model('User', schema)

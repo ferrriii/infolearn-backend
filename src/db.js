@@ -6,7 +6,8 @@ function connectToDb (url) {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useFindAndModify: false, // DeprecationWarning: Mongoose: `findOneAndUpdate()` and `findOneAndDelete()`
-    useCreateIndex: true
+    useCreateIndex: true,
+    autoIndex: process.env.DEBUG
   })
 }
 

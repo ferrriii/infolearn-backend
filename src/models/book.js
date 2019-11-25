@@ -10,5 +10,6 @@ const schema = mongoose.Schema({
 })
 
 schema.index({ title: 'text', description: 'text' })
+schema.index({ author: 1 })
 
 export default mongoose.model('Book', schema)

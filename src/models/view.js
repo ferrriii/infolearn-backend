@@ -8,4 +8,7 @@ const schema = mongoose.Schema({
   timestamps: true
 })
 
+schema.index({ lastView: 1 })
+schema.index({ textId: 1 })
+
 export default mongoose.model('View', schema)

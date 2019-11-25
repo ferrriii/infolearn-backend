@@ -11,4 +11,7 @@ const schema = mongoose.Schema({
   timestamps: true
 })
 
+schema.index({ book: 1 })
+schema.index({ time: 1 })
+
 export default mongoose.model('Text', schema)
