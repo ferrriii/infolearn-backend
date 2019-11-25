@@ -8,10 +8,13 @@ export default {
     const userId = req.authToken.sub
     const bookId = req.body.book
     const filter = { _id: userId }
-    const update = { $addToSet: { subscription: new ObjectId(bookId) } }
-    console.log(update)
-    const u = await User.findOneAndUpdate(filter, update)
-    console.log(u)
+    const update = {
+      $addToSet: { subscription: new ObjectId(bookId) },
+      $set: {
+        ['lastRead.' + bookId]: 0
+      }
+    }
+    await User.findOneAndUpdate(filter, update)
     Response(res).success()
   }
 }

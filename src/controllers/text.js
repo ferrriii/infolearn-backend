@@ -69,7 +69,6 @@ async function publish (req, res) {
   const book = await Book.findById(bookId)
   // TODO: error handling
   if (book.author.toString() !== userId) {
-    console.log(book.author, userId, typeof book.author, book.author.toString())
     return Response(res).error(403, 'Forbidden!')
   }
   book.lastText = text
@@ -78,10 +77,25 @@ async function publish (req, res) {
   Response(res).success()
 }
 
-function textsToLearn (userObj, timeOffset) {
-  const userSubscriptions = userObj.subscription.map(s => new ObjectId(s))
+async function textsToLearn (userObj, timeOffsets = {}) {
+  const textPromises = []
+  userObj.subscription.forEach(bookIdString => {
+    const bookId = new ObjectId(bookIdString)
+    let lastRead = userObj.lastRead[bookIdString]
+    const bookTimeOffset = timeOffsets[bookIdString] || 0
+    if (bookTimeOffset > lastRead) {
+      lastRead = bookTimeOffset
+    }
+    textPromises.push(textToLearnInBook(userObj, bookId, lastRead))
+  })
+
+  const texts = await Promise.all(textPromises)
+  return texts.flat()
+}
+
+function textToLearnInBook (userObj, bookId, timeOffset) {
   const filter = {
-    book: { $in: userSubscriptions },
+    book: bookId,
     time: {
       $gt: timeOffset
     }
@@ -90,7 +104,7 @@ function textsToLearn (userObj, timeOffset) {
   return Text.aggregate([
     { $match: filter },
     { $sort: { time: 1 } },
-    { $limit: 12 },
+    { $limit: 5 },
     ...textPreparationPipeline(userObj),
     { $sort: { time: 1 } }
   ])
@@ -109,7 +123,7 @@ function textsToReview (userObj) {
     { $unwind: '$text' },
     { $sort: { lastView: 1 } },
     { $limit: 20 },
-    { $sample: { size: 15 } },
+    { $sample: { size: 10 } },
     { $replaceRoot: { newRoot: '$text' } },
     ...textPreparationPipeline(userObj)
   ])
@@ -118,14 +132,10 @@ function textsToReview (userObj) {
 async function nextTexts (req, res) {
   const userId = req.authToken.sub
   const user = await User.findById(userId)
-  const time = Number.parseInt(req.query.time)
-  let timeOffset = user.lastRead
-  if (time) {
-    timeOffset = time
-  }
-  console.log(time, timeOffset)
+  // preset with an empty object in case time is not provided
+  const offsets = { ...req.body.time }
 
-  const newTexts = await textsToLearn(user, timeOffset)
+  const newTexts = await textsToLearn(user, offsets)
   const oldTexts = await textsToReview(user)
   newTexts.splice(1, 0, ...oldTexts)
   Response(res).success(newTexts)
@@ -134,9 +144,11 @@ async function nextTexts (req, res) {
 async function readText (req, res) {
   const userId = req.authToken.sub
   const text = req.body.text
+  const textBookId = text.book.id
   const user = await User.findById(userId)
-  if (text.time > user.lastRead) {
-    user.lastRead = text.time
+  if (text.time > user.lastRead[textBookId]) {
+    user.lastRead[textBookId] = text.time
+    user.markModified('lastRead')
     user.save()
   }
 

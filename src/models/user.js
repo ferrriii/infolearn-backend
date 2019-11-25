@@ -7,7 +7,7 @@ const schema = mongoose.Schema({
   name: { type: String, default: null },
   password: { type: String, default: null },
   subscription: [mongoose.Schema.Types.ObjectId],
-  lastRead: { type: Number, default: 0 }
+  lastRead: { type: Object, default: {} }
 }, {
   timestamps: true
 })
