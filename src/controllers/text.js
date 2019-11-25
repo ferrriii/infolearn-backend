@@ -110,7 +110,7 @@ function textToLearnInBook (userObj, bookId, timeOffset) {
   ])
 }
 
-function textsToReview (userObj) {
+function textsToReview (userObj, count = 10) {
   return View.aggregate([
     {
       $lookup: {
@@ -122,8 +122,8 @@ function textsToReview (userObj) {
     },
     { $unwind: '$text' },
     { $sort: { lastView: 1 } },
-    { $limit: 20 },
-    { $sample: { size: 10 } },
+    { $limit: count * 2 },
+    { $sample: { size: count } },
     { $replaceRoot: { newRoot: '$text' } },
     ...textPreparationPipeline(userObj)
   ])
@@ -136,7 +136,9 @@ async function nextTexts (req, res) {
   const offsets = { ...req.body.time }
 
   const newTexts = await textsToLearn(user, offsets)
-  const oldTexts = await textsToReview(user)
+  let cnt = Number.parseInt((newTexts.length || 40) * 0.4)
+  cnt = Math.max(1, cnt)
+  const oldTexts = await textsToReview(user, cnt)
   newTexts.splice(1, 0, ...oldTexts)
   Response(res).success(newTexts)
 }
