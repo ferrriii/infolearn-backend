@@ -112,6 +112,7 @@ function textToLearnInBook (userObj, bookId, timeOffset) {
 
 function textsToReview (userObj, count = 10) {
   return View.aggregate([
+    { $match: { userId: userObj._id } },
     {
       $lookup: {
         from: 'texts',
@@ -121,8 +122,8 @@ function textsToReview (userObj, count = 10) {
       }
     },
     { $unwind: '$text' },
-    { $sort: { lastView: 1 } },
-    { $limit: count * 2 },
+    { $sort: { views: 1 } },
+    { $limit: count + 5 }, // indicate tolerance with +
     { $sample: { size: count } },
     { $replaceRoot: { newRoot: '$text' } },
     ...textPreparationPipeline(userObj)
@@ -155,7 +156,10 @@ async function readText (req, res) {
   }
 
   await View.updateOne(
-    { textId: new ObjectId(text.id) },
+    {
+      textId: new ObjectId(text.id),
+      userId: user._id
+    },
     {
       $inc: { views: 1 },
       $set: { lastView: TimeStamp() }
