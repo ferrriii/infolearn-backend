@@ -81,7 +81,7 @@ async function textsToLearn (userObj, timeOffsets = {}) {
   const textPromises = []
   userObj.subscription.forEach(bookIdString => {
     const bookId = new ObjectId(bookIdString)
-    let lastRead = userObj.lastRead[bookIdString]
+    let lastRead = userObj.lastRead[bookIdString] || 0
     const bookTimeOffset = timeOffsets[bookIdString] || 0
     if (bookTimeOffset > lastRead) {
       lastRead = bookTimeOffset
@@ -149,7 +149,8 @@ async function readText (req, res) {
   const text = req.body.text
   const textBookId = text.book.id
   const user = await User.findById(userId)
-  if (text.time > user.lastRead[textBookId]) {
+  const userLastRead = user.lastRead[textBookId] || 0
+  if (text.time > userLastRead) {
     user.lastRead[textBookId] = text.time
     user.markModified('lastRead')
     user.save()

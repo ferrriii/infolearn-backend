@@ -4,15 +4,23 @@ import Mongoose from 'mongoose'
 const ObjectId = Mongoose.Types.ObjectId
 
 export default {
-  async subcribe (req, res) {
+  async subscribe (req, res) {
     const userId = req.authToken.sub
     const bookId = req.body.book
     const filter = { _id: userId }
     const update = {
-      $addToSet: { subscription: new ObjectId(bookId) },
-      $set: {
-        ['lastRead.' + bookId]: 0
-      }
+      $addToSet: { subscription: new ObjectId(bookId) }
+    }
+    await User.findOneAndUpdate(filter, update)
+    Response(res).success()
+  },
+
+  async unsubscribe (req, res) {
+    const userId = req.authToken.sub
+    const bookId = req.body.book
+    const filter = { _id: userId }
+    const update = {
+      $pull: { subscription: new ObjectId(bookId) }
     }
     await User.findOneAndUpdate(filter, update)
     Response(res).success()
