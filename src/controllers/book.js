@@ -3,7 +3,7 @@ import Response from '../modules/response.js'
 import Mongoose from 'mongoose'
 const ObjectId = Mongoose.Types.ObjectId
 
-function bookPipeline (extendedFields = []) {
+function bookPipeline (currentUserId, extendedFields = []) {
   const extendedGroups = {}
   const extendedProject = {}
   extendedFields.forEach(f => {
@@ -17,7 +17,12 @@ function bookPipeline (extendedFields = []) {
       {
         from: 'users',
         pipeline: [
-          { $project: { _id: 0, subscription: 1 } }
+          {
+            $project: {
+              _id: 0,
+              subscription: { $cond: { if: { $eq: ['$_id', currentUserId] }, then: '$subscription', else: [] } }
+            }
+          }
         ],
         as: 'subscribedBooks'
       }
@@ -55,14 +60,14 @@ function bookPipeline (extendedFields = []) {
 }
 
 async function books (req, res) {
-  const userId = req.authToken.sub
+  const userId = new ObjectId(req.authToken.sub)
   const userBooks = await Book.aggregate([
     {
       $match: {
-        author: new ObjectId(userId)
+        author: userId
       }
     },
-    ...bookPipeline()
+    ...bookPipeline(userId)
   ])
 
   Response(res).success(userBooks)
@@ -94,6 +99,7 @@ async function createBook (req, res) {
 }
 
 async function searchBooks (req, res) {
+  const userId = new ObjectId(req.authToken.sub)
   const query = req.body.q
 
   const books = await Book.aggregate([
@@ -103,11 +109,11 @@ async function searchBooks (req, res) {
       }
     },
     { $sort: { score: { $meta: 'textScore' } } },
-    { $limit: 10 },
+    { $limit: 30 },
     {
       $addFields: { score: { $meta: 'textScore' } }
     }, // subscriptions are nested, let's extract them
-    ...bookPipeline(['score']),
+    ...bookPipeline(userId, ['score']),
     { $sort: { score: -1 } }
   ])
 
