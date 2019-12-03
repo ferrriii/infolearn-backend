@@ -20,5 +20,7 @@ app.post('/text/next', auth.checkAuth, textController.nextTexts)
 app.post('/books', auth.checkAuth, bookController.createBook)
 app.post('/search/books', auth.checkAuth, bookController.searchBooks)
 app.post('/read', auth.checkAuth, textController.readText)
+app.get('/like/:id', auth.checkAuth, textController.likeText)
+app.get('/removelike/:id', auth.checkAuth, textController.removeLikeText)
 
 export default app

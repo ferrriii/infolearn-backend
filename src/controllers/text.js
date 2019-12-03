@@ -171,6 +171,28 @@ async function readText (req, res) {
   Response(res).success()
 }
 
+async function likeText (req, res) {
+  const userId = req.authToken.sub
+  const textId = req.params.id
+
+  await Text.findOneAndUpdate(
+    { _id: textId },
+    { $addToSet: { likes: new ObjectId(userId) } }
+  )
+  Response(res).success()
+}
+
+async function removeLikeText (req, res) {
+  const userId = req.authToken.sub
+  const textId = req.params.id
+
+  await Text.findOneAndUpdate(
+    { _id: textId },
+    { $pull: { likes: new ObjectId(userId) } }
+  )
+  Response(res).success()
+}
+
 function saveText (text, author, book) {
   const txtObj = new Text({
     text,
@@ -186,5 +208,7 @@ function saveText (text, author, book) {
 export default {
   publish,
   nextTexts,
-  readText
+  readText,
+  likeText,
+  removeLikeText
 }
