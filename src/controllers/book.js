@@ -127,7 +127,7 @@ async function topBooks (req, res) {
 
     { $sort: { updatedAt: 1 } },
     { $limit: 30 },
-    ...bookPipeline(userId),
+    ...bookPipeline(userId)
   ])
 
   Response(res).success(books)
