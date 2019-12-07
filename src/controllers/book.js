@@ -120,8 +120,22 @@ async function searchBooks (req, res) {
   Response(res).success(books)
 }
 
+async function topBooks (req, res) {
+  const userId = new ObjectId(req.authToken.sub)
+
+  const books = await Book.aggregate([
+
+    { $sort: { updatedAt: 1 } },
+    { $limit: 30 },
+    ...bookPipeline(userId),
+  ])
+
+  Response(res).success(books)
+}
+
 export default {
   books,
   createBook,
-  searchBooks
+  searchBooks,
+  topBooks
 }
