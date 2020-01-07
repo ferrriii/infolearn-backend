@@ -28,3 +28,7 @@ npm run start
 ```
 npm run test
 ```
+### Check with Flow
+```
+npm run flow
+```
