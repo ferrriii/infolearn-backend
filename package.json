@@ -18,7 +18,7 @@
     "@babel/preset-flow": "^7.10.4",
     "babel-polyfill": "^6.26.0",
     "eslint": "^7.5.0",
-    "flow-bin": "^0.129.0",
+    "flow-bin": "^0.130.0",
     "jest": "^26.1.0",
     "nodemon": "^2.0.4",
     "standard": "^14.3.4",
