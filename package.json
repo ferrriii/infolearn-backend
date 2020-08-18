@@ -19,7 +19,7 @@
     "babel-polyfill": "^6.26.0",
     "eslint": "^7.6.0",
     "flow-bin": "^0.131.0",
-    "jest": "^26.2.2",
+    "jest": "^26.4.0",
     "nodemon": "^2.0.4",
     "standard": "^14.3.4",
     "supertest": "^4.0.2"
