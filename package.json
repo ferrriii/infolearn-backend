@@ -1,23 +1,26 @@
 {
   "name": "infoshare",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "standard --fix && nodemon --exec babel-node src/index.js",
-    "lint": "standard src/**",
-	"flow": "flow check --all",
-    "test": "jest"
+    "flow": "flow check --all",
+    "test": "jest",
+    "dev": "npm run lint && nodemon --exec babel-node src/index.js",
+    "build": "npm run lint && babel src --out-dir dist",
+    "lint": "standard --fix",
+    "start": "npm run build && node dist/index.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@babel/core": "^7.11.4",
+    "@babel/cli": "^7.11.1",
+    "@babel/core": "^7.11.5",
     "@babel/node": "^7.10.5",
-    "@babel/preset-env": "^7.11.0",
+    "@babel/preset-env": "^7.11.5",
     "@babel/preset-flow": "^7.10.4",
     "babel-polyfill": "^6.26.0",
-    "eslint": "^7.7.0",
+    "eslint": "^7.8.0",
     "flow-bin": "^0.131.0",
     "jest": "^26.4.2",
     "nodemon": "^2.0.4",
@@ -30,9 +33,19 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.10.1"
+    "mongoose": "^5.10.2"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env",
+      "@babel/preset-flow"
+    ]
   },
   "standard": {
+    "ignore": [
+      "dist/",
+      "src/lib/trader/"
+    ],
     "env": {
       "jest": true,
       "node": true
