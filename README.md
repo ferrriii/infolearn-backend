@@ -27,6 +27,11 @@ Make sure mongo server is up and then:
 ```
 npm run start
 ```
+### OR Use Docker
+```
+docker-compose up
+```
+
 ### Test
 ```
 npm run test
