@@ -23,7 +23,7 @@
     "eslint": "^7.10.0",
     "flow-bin": "^0.134.0",
     "jest": "^26.5.2",
-    "nodemon": "^2.0.4",
+    "nodemon": "^2.0.5",
     "standard": "^14.3.4",
     "supertest": "^5.0.0"
   },
