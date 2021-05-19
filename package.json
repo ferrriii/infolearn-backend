@@ -33,7 +33,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.11.17"
+    "mongoose": "^5.12.10"
   },
   "babel": {
     "presets": [
